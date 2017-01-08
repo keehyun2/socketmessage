@@ -3,7 +3,9 @@
 .project
 .settings
 .metadata
+.springBeans
 .gradle
+.mvn
 /target
 */target
 /build
