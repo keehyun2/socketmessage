@@ -2,31 +2,16 @@
 var Chat = {
 
 	/**
-	 * socket 변수 선언
+	 * stompClient 
 	 */
-	//socket : {},
 	stompClient : {},
 	
 	editor: null,
-	/**
-	 * value Object 
-	 */
-	data: {
-		code : 0, 
-	    nickName : 'Guest', 
-	    room : 0,
-	    option : '',
-	    message : '',
-	    codeScript : '',
-	    codeConfig : {}
-	},
 	
 	/**
-	 * 초기화
+	 * first initialize once  
 	 */
 	initialize : function(){
-		
-		Chat.connect();
 		
 		$(document).ready(function(){
 			
@@ -40,16 +25,8 @@ var Chat = {
 			$('#btnEditor').on('click', function(){
 				$('#code-container').toggle();
 				$(this).toggleClass('active');
-				$("#chat-container").toggleClass('col-md-7');
-				$("#chat-container").toggleClass('col-md-12');
-			});
-			
-			$("#nickName").on('keydown',function( event ) {
-				if (event.keyCode == 13) {
-					Chat.data.nickName = $('this').val();
-					Chat.sendMessage();
-					event.preventDefault();
-				}
+				$("#chat-container").toggleClass('col-md-6');
+				$("#chat-container").toggleClass('col-md-10');
 			});
 			
 			$('#btnSend').on('click', function(){
@@ -64,16 +41,46 @@ var Chat = {
 				$('#console').html('');
 			});
 			
+			/*$('#user-list li').on('click', function(){
+				
+				Chat.stompClient.send("/app/chat.private." + $(this).attr('id'), {}, JSON.stringify(data));
+			});*/
+			
 			Chat.bindChat();
 			
-			//$('#modalSetNick').modal({ keyboard: false }).modal('show');
+			$('[data-toggle="popover"]').popover();
 			
-			$('[data-toggle="popover"]').popover()
 			
-		}); // documnet ready close
+			// event for id change   
+			$('#btnSetNick').on('click', function(){
+				
+				if($('#nick').val() != ''){
+					localStorage.setItem('SavedID', $('#nick').val());
+					var data = {
+					    nickName : localStorage.getItem('SavedID'), 
+					    message : ''
+					};
+					Chat.stompClient.send("/app/nickname", {}, JSON.stringify(data));
+				}
+			});
+			
+			// event after id change modal show   
+			$('#modalSetNick').on('show.bs.modal', function (e) {
+				if(localStorage.getItem('SavedID') != null){
+					$('#nick').val(localStorage.getItem('SavedID'));
+				}
+			});
+			
+			$('#btnPopNick').on('click', function(){
+				$('#modalSetNick').modal({ keyboard: false, backdrop: 'static' }).modal('show');
+				$('#nick').focus();
+			}).click();
+			
+			Chat.connect();
+			
+		}); // document ready close
 		
 		$(window).on('unload',function(){
-			//Chat.socket.close();
 			Chat.stompClient.disconnect();
 		});
 	},
@@ -83,12 +90,6 @@ var Chat = {
 	 */
 	settingCodeMirror : function(){
 		CodeMirror.modeURL = "cm/mode/%N/%N.js";
-		
-		// code mirror 설정
-		/*Chat.editor = CodeMirror($("#codeScript")[0], {
-	        lineNumbers: true,
-	        matchBrackets: true // 괄호 자동 닫기? 
-	    });*/
 		
 		Chat.editor = CodeMirror.fromTextArea($("#codeScript > textarea")[0], {
 			lineNumbers: true,
@@ -138,138 +139,144 @@ var Chat = {
 			}
 		});
 		
-		$(document).on('click', '[name=btnUnfold]',function(){
-			
-		});
-		
 		Chat.editor.setSize('100%','500px');
 		
-		// autocomplete key bind
+		// auto complete key bind 
 		var mac = CodeMirror.keyMap.default == CodeMirror.keyMap.macDefault;
 		CodeMirror.keyMap.default[(mac ? "Cmd" : "Ctrl") + "-Space"] = "autocomplete";
 	},
 
 	/**
-	 * 소스코드 보내기 
+	 * send Source Code to everyone
 	 */
 	sendSourceCode : function(){
-		// Chat.data.code을 1로 바꾸고, 
-		// message, codeScript 를 send 함.
-		// 그리고 메세지를 받을때 1인경우 출력을  
-		// Console.code 로 함.
 		
-		var dataVO = {
-			code : 1, 
-		    nickName : $('#nickName').val(), 
-		    room : 0,
-		    option : $('#option').val(),
-		    message : "<button type='button' name='btnFold' class='btn btn-primary btn-xs' >Fold</button>",
+		var jsonData = {
+		    nickName : '', 
 		    codeScript : Chat.editor.getValue(),
 		    codeConfig : {
-				mode : $('#mode').val(),
-				theme : $('#theme').val(),
+				mode : Chat.editor.getOption('mode'),
+				theme : Chat.editor.getOption('theme'),
 				readOnly : 'nocursor',
-				lineNumbers : true
+				lineNumbers : Chat.editor.getOption('lineNumbers')
 		    }
 		};
 		
-		Chat.sendMessage(dataVO);
+		Chat.stompClient.send("/app/source", {}, JSON.stringify(jsonData));
 	},
 	
 	
 	/**
-	 * 웹소켓 연결
-	 * @param host
+	 * connect SockJS and Stomp
 	 */
 	connect : function(){
 		
-		var socket = new SockJS('/gs-guide-websocket');
+		var socket = new SockJS('/ws');
 	    Chat.stompClient = Stomp.over(socket);
 	    
 	    Chat.stompClient.debug = null;
+	    
+	    var SavedID = localStorage.getItem('SavedID');
+	    
 	    Chat.stompClient.connect({}, function (frame) {
 	        
-	        //console.log('Connected: ' + frame);
-	        
-	        Chat.stompClient.subscribe('/topic/greetings', function (message) {
-	            //console.log(message);
-	            
+	    	// '/topic/chat' stomp receive event 
+	        Chat.stompClient.subscribe('/topic/chat', function (message) {
 	            var jsonData = JSON.parse(message.body);
-				
-				if(jsonData.code == 3){
-					if(!$(".img_type").is(':visible')){
-						$('.img_type').show(1).delay(1000).hide(2);
-					}
-					return
-				}
-				//console.log(jsonData);
-				
-				Console.log(jsonData);
-				
-				if(jsonData.code == 2){
-					// 다른 browser로 접근해서 소켓 닫음.
-					//Chat.socket.close();
-					Chat.stompClient.disconnect();
-				}else if(jsonData.code == 1){
-					// 코드를 출력함. 
-					Console.codeChat(jsonData);
-				}else if(jsonData.code == 0){
-					// 기본
-					return;
-				}
+				Console.talk(jsonData);
 	        });
+	        
+	        Chat.stompClient.subscribe('/queue/typing', function (message) {
+	        	$('#'+message.body).addClass('typing').delay(1000).queue(function(next){
+	        		$(this).removeClass('typing');
+	        		next();
+	        	});
+	        	
+	        });
+	        
+	        Chat.stompClient.subscribe('/queue/source', function (message) {
+	        	var parsed = JSON.parse(message.body);
+	        	Console.printSource(parsed);
+	        });
+	        
+	        Chat.stompClient.subscribe('/queue/members', function (message) {
+	        	var parsed = JSON.parse(message.body);
+	        	Chat.setUserList(parsed);
+	        });
+	        
+	        /*Chat.stompClient.subscribe("/user/exchange/amq.direct/chat.message", function(message) {
+				var parsed = JSON.parse(message.body);
+				console.log(parsed);
+	        });*/
+	        
+	        Chat.stompClient.send("/app/members", {}, {});
 	        
 	    });
 	    
 	},
 	
 	/**
-	 * 웹소켓 메세지 보내기
+	 * sendMessage
 	 */
-	sendMessage : function(dataVO) {
-		if(dataVO){
-			Chat.stompClient.send("/app/k", {}, JSON.stringify(dataVO));
-
-			Chat.checkType(dataVO.code);
-		}else{
-			Chat.data.nickName = $('#nickName').val(); 
-			Chat.data.message = $('#chat').val();
-			
-			Chat.stompClient.send("/app/k", {}, JSON.stringify(Chat.data));
-			
-			Chat.checkType(Chat.data.code);
-		}
+	sendMessage : function() {
+		
+		var data = {
+		    nickName : '', 
+		    message : $('#chat').val()
+		};
+		
+		Chat.stompClient.send("/app/chat", {}, JSON.stringify(data));
+		
+		$('#chat').val('');
 	},
 	
 	/**
-	 * 키보드 채팅 치는 거 체크, code 가 3이면 typing 중이라는 메세지임. 
+	 * send typing signal to websocket
 	 */
-	checkType : function(code) {
-		if(code != 3 && code != 1){
-			$('#chat').val('');
-		}
+	sendTyping : function(dataVO) {
+		Chat.stompClient.send("/app/typing", {}, JSON.stringify({sessionID : ''}));
 	},
 	
 	/**
-	 * chat 입력창 enter key bind
+	 * bind chat input form with enter key  
 	 */
 	bindChat : function(){
+		
 		$("#chat").on('keydown',function( event ) {
 			if ( event.which == 13 ) {
 				Chat.sendMessage();
 				event.preventDefault();
 			}else{
-				var dataVO = {
-					code : 3, 
-				    nickName : '', 
-				    room : 0,
-				    option : '',
-				    message : '',
-				    codeScript : '',
-				    codeConfig : {}
-				};
-				Chat.sendMessage(dataVO);
+				Chat.sendTyping();
 			}
+			
 		});
+		
+		$("#name").on('keyup',function( event ) {
+			$.each($('#user-list li'), function(idx, el){
+				if($(this).text().indexOf($("#name").val()) > -1){
+					$(this).css('display','block');
+				}else{
+					$(this).css('display','none');
+				}
+				
+			});
+			
+		});
+	},
+	
+	/**
+	 * set user-list 
+	 */
+	setUserList : function(arrayJson){
+		//console.log(arrayJson)
+		
+		$('#user-list').html('');
+		$.each(arrayJson, function(idx, obj){
+			
+			var name = obj.nickName + ' (' + obj.ip + ')';
+			$('#user-list').append($('<li>').html(name).attr('title',name).attr('id',obj.sessionId));
+		});
+		
 	}
 };

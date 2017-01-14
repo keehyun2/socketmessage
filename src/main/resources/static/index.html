@@ -24,12 +24,12 @@
 	<link rel="stylesheet" href="cm/addon/fold/foldgutter.css" />
 	<script type="text/javascript" src="cm/lib/codemirror.js"></script>
 	<script type="text/javascript" src="cm/addon/edit/matchbrackets.js"></script>
-	<script src="cm/addon/fold/foldcode.js"></script>
-	<script src="cm/addon/fold/foldgutter.js"></script>
-	<script src="cm/addon/fold/brace-fold.js"></script>
-	<script src="cm/addon/fold/xml-fold.js"></script>
-	<script src="cm/addon/fold/markdown-fold.js"></script>
-	<script src="cm/addon/fold/comment-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/foldgutter.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/foldcode.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/brace-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/xml-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/markdown-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/comment-fold.js"></script>
 	<link rel="stylesheet" href="cm/addon/hint/show-hint.css" />
 	<script type="text/javascript" src="cm/addon/hint/show-hint.js"></script>
 	
@@ -108,13 +108,16 @@
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
 					<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#"><img src="img/logo48.png" alt="logo" style="display: inline; width: 24px;" /> Socket Message v1.0</a>
+				<a class="navbar-brand" href="#"><img src="img/logo48.png" alt="logo" style="display: inline; width: 24px;" /> Socket Message v1.1</a>
 			</div>
 			<!-- Collect the nav links, forms, and other content for toggling -->
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 				<ul class="nav navbar-nav">
 					<li class="active"><a href="#">Chat <span class="sr-only">(current)</span></a></li>
-					<li><a href="#" role="button" data-toggle="popover" data-container="body" data-placement="right" data-content="Prepairing service" data-trigger="hover">Hot Code</a></li>
+					<li><a href="#" role="button" data-toggle="popover" data-container="body" data-placement="right" data-content="Prepairing service" data-trigger="hover">HotCode</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="https://github.com/keehyun2/socketmessage" target="_NEW"  >GitHub</a></li>
 				</ul>
 			</div>
 			<!-- /.navbar-collapse -->
@@ -123,17 +126,30 @@
 	</nav>
 	<div class="container-fluid">
 		<div class="row">
-			<div id="chat-container" class="col-md-7">
+			<div id="user-container" class="col-md-2">
+				<div style="display:inline-block;position:relative;">
+					<input type="text" class="form-control" placeholder="type name" id="name" />
+				</div>
+				<ul id="user-list">
+				</ul>
+			</div>
+			<div id="chat-container" class="col-md-6">
 				<div class="form-inline" style="position: relative;">
-					<input type="text" class="form-control" placeholder="type nickName" id="nickName" value="Guest" />
+					<!-- <input type="text" class="form-control" id="nickName" value="" readonly/> -->
 					<div style="display:inline-block;position:relative;">
 						<input type="text" class="form-control" placeholder="type and press enter to chat" id="chat" />
-						<img class="img_type" alt="type" src="img/type.gif" />
+						<!-- <img class="img_type" alt="type" src="img/type.gif" /> -->
 					</div>
 					<div class="btn-group  pull-right">
-						<button type="button" id="btnEditor" class="btn btn-default" >
-							<span class="glyphicon glyphicon-console" aria-hidden="true"></span>
+						<!-- <button type="button" id="btnUserList" class="btn btn-default" >
+							<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+						</button> -->
+						<button type="button" id="btnPopNick" class="btn btn-default" >
+							<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
 						</button>
+						<!-- <button type="button" id="btnEditor" class="btn btn-default" >
+							<span class="glyphicon glyphicon-console" aria-hidden="true"></span>
+						</button> -->
 						<button type="button" id="btnRefresh" class="btn btn-default" >
 							<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
 						</button>
@@ -145,7 +161,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="code-container" class="col-md-5">
+			<div id="code-container" class="col-md-4">
 				<div class="form-inline">
 					<div class="form-group">
 						<!-- <label for="option" >Lang</label> -->
@@ -334,15 +350,18 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
-					</button>
-					<h4 class="modal-title" id="myModalLabel">Enter Your NickName</h4>
+					</button> -->
+					<h4 class="modal-title" id="myModalLabel">Enter NickName</h4>
+					<p>If you do not enter nickname, System gives guest ID to you</p>
 				</div>
-				<div class="modal-body">...</div>
+				<div class="modal-body">
+					<input type="text" class="form-control" placeholder="Enter Your NickName" id="nick" />
+				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary">Save changes</button>
+					<!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+					<button type="button" class="btn btn-primary" data-dismiss="modal" id="btnSetNick" >get started</button>
 				</div>
 			</div>
 		</div>

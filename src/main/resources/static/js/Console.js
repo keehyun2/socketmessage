@@ -5,10 +5,10 @@
 var Console = {
 	
 	/**
-	 * 채팅 출력
+	 * discuss the topics 
 	 */
-	log : function(jsonData) {
-		$('#console').append($('<p>').css('wordWrap','break-word').html(jsonData.nickName + ' : ' + jsonData.message));
+	talk : function(jsonData) {
+		$('#console').append($('<p>').html('&nbsp;' + jsonData.nickName + ' : ' + jsonData.message));
 		
 		/*while (console.childNodes.length > 25) {
 			console.removeChild(console.firstChild);
@@ -18,19 +18,23 @@ var Console = {
 	},
 	
 	/**
-	 * 코드 출력
+	 * print source 
 	 */
-	codeChat : function(jsonData) {
+	printSource : function(jsonData) {
 		//console.log(jsonData);
-		// pre 로 감싸고 class 에 언어 타입 넣어주고, 코드 하이라이트 
 		
+		// wrap in pre tag , inject program language type to attribute class and set code coloring   
+		var btn = $("<button type='button' name='btnFold' class='btn btn-primary btn-xs' >Fold</button>");
 		var pre = $('<pre>');
 		var codeElement = $("<code>");
+		
+		//pre.prev().find('[name=btnFold]').prop('cm',cm);
+		$('#console').append($('<p>').html('&nbsp;' + jsonData.nickName + ' : ').append(btn));
 		$('#console').append(pre.append(codeElement));
+		
 		jsonData.codeConfig.value = jsonData.codeScript;
 		var cm = CodeMirror(codeElement[0], jsonData.codeConfig);
-		pre.prev().find('[name=btnFold]').prop('cm',cm);
-		pre.prev().find('[name=btnUnfold]').prop('cm',cm);
+		btn.prop('cm',cm);
 		
 		window.setTimeout(function(){
 			$('#console').scrollTop($('#console')[0].scrollHeight);

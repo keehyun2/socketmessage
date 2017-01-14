@@ -16,29 +16,11 @@ input#chat {
 }
 
 #codeScript {
+	/* float: left; */
 	position: relative;
 	margin-top: 13px;
 }
-/* 
-#toggle-btn:before {
-	content : '>>';
-	font-size: 20px;
-	font-weight: bold;
-}
 
-#toggle-btn.on:before {
-	content : '<<';
-}
-
-#mode-btn:before {
-	content : 'Pop';
-	font-size: 16px;
-	font-weight: bold;
-}
-
-#mode-btn.on:before {
-	content : 'Inline';
-} */
 #chat-container {
 	float:left;
 	position:relative;
@@ -63,6 +45,7 @@ input#chat {
 #console p {
 	padding: 0;
 	margin: 0;
+	word-wrap: break-word;
 }
 
 #console>p:nth-child(even) {
@@ -93,4 +76,30 @@ img.img_type {
 	position: absolute;
 	right: -40px;
 	top: 5px;
+}
+
+#user-list {
+	list-style: none;
+	width: 100%;
+	height: 500px;
+ 	border: 1px solid #CCCCCC;
+ 	/* background-color: #eee; */
+ 	margin-top: 13px;
+ 	padding: 0;
+}
+
+#user-list > li {
+	white-space :nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-left: 30px;
+}
+
+#user-list > li.typing {
+	background-image: url('../img/type.gif');
+	background-repeat: no-repeat;
+}
+
+#user-list > li:nth-child(even) {
+	background-color: #f2f4f3;
 }
