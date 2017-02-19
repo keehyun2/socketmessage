@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Socket Message</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<link rel="shortcut icon" href="img/logo32.ico" />
+	
+	<!-- webjars - jQuery -->
+	<script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+	
+	<!-- webjars - sockJS, stomp -->
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.js"></script>
+
+	<!-- webjars - bootstrap -->
+	<script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.js"></script>
+	<script type="text/javascript" src="/webjars/bootstrap/js/popover.js"></script>
+	<link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css"/>
+	<link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap-theme.css"/>
+
+	<!-- static - code mirror -->
+	<link rel="stylesheet" href="cm/lib/codemirror.css" />
+	<link rel="stylesheet" href="cm/addon/fold/foldgutter.css" />
+	<script type="text/javascript" src="cm/lib/codemirror.js"></script>
+	<script type="text/javascript" src="cm/addon/edit/matchbrackets.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/foldgutter.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/foldcode.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/brace-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/xml-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/markdown-fold.js"></script>
+	<script type="text/javascript" src="cm/addon/fold/comment-fold.js"></script>
+	<link rel="stylesheet" href="cm/addon/hint/show-hint.css" />
+	<script type="text/javascript" src="cm/addon/hint/show-hint.js"></script>
+	
+	<!-- addon load mode -->
+	<script type="text/javascript" src="cm/addon/mode/loadmode.js"></script>
+	<script type="text/javascript" src="cm/mode/meta.js"></script>
+	
+	<!-- code mirror theme start -->
+	<link rel="stylesheet" href="cm/theme/3024-day.css">
+	<link rel="stylesheet" href="cm/theme/3024-night.css">
+	<link rel="stylesheet" href="cm/theme/abcdef.css">
+	<link rel="stylesheet" href="cm/theme/ambiance.css">
+	<link rel="stylesheet" href="cm/theme/base16-dark.css">
+	<link rel="stylesheet" href="cm/theme/bespin.css">
+	<link rel="stylesheet" href="cm/theme/base16-light.css">
+	<link rel="stylesheet" href="cm/theme/blackboard.css">
+	<link rel="stylesheet" href="cm/theme/cobalt.css">
+	<link rel="stylesheet" href="cm/theme/colorforth.css">
+	<link rel="stylesheet" href="cm/theme/dracula.css">
+	<link rel="stylesheet" href="cm/theme/duotone-dark.css">
+	<link rel="stylesheet" href="cm/theme/duotone-light.css">
+	<link rel="stylesheet" href="cm/theme/eclipse.css">
+	<link rel="stylesheet" href="cm/theme/elegant.css">
+	<link rel="stylesheet" href="cm/theme/erlang-dark.css">
+	<link rel="stylesheet" href="cm/theme/hopscotch.css">
+	<link rel="stylesheet" href="cm/theme/icecoder.css">
+	<link rel="stylesheet" href="cm/theme/isotope.css">
+	<link rel="stylesheet" href="cm/theme/lesser-dark.css">
+	<link rel="stylesheet" href="cm/theme/liquibyte.css">
+	<link rel="stylesheet" href="cm/theme/material.css">
+	<link rel="stylesheet" href="cm/theme/mbo.css">
+	<link rel="stylesheet" href="cm/theme/mdn-like.css">
+	<link rel="stylesheet" href="cm/theme/midnight.css">
+	<link rel="stylesheet" href="cm/theme/monokai.css">
+	<link rel="stylesheet" href="cm/theme/neat.css">
+	<link rel="stylesheet" href="cm/theme/neo.css">
+	<link rel="stylesheet" href="cm/theme/night.css">
+	<link rel="stylesheet" href="cm/theme/panda-syntax.css">
+	<link rel="stylesheet" href="cm/theme/paraiso-dark.css">
+	<link rel="stylesheet" href="cm/theme/paraiso-light.css">
+	<link rel="stylesheet" href="cm/theme/pastel-on-dark.css">
+	<link rel="stylesheet" href="cm/theme/railscasts.css">
+	<link rel="stylesheet" href="cm/theme/rubyblue.css">
+	<link rel="stylesheet" href="cm/theme/seti.css">
+	<link rel="stylesheet" href="cm/theme/solarized.css">
+	<link rel="stylesheet" href="cm/theme/the-matrix.css">
+	<link rel="stylesheet" href="cm/theme/tomorrow-night-bright.css">
+	<link rel="stylesheet" href="cm/theme/tomorrow-night-eighties.css">
+	<link rel="stylesheet" href="cm/theme/ttcn.css">
+	<link rel="stylesheet" href="cm/theme/twilight.css">
+	<link rel="stylesheet" href="cm/theme/vibrant-ink.css">
+	<link rel="stylesheet" href="cm/theme/xq-dark.css">
+	<link rel="stylesheet" href="cm/theme/xq-light.css">
+	<link rel="stylesheet" href="cm/theme/yeti.css">
+	<link rel="stylesheet" href="cm/theme/zenburn.css">
+	<!-- code mirror theme end -->
+
+	<link type="text/css" rel="stylesheet" href="css/chat.css"/>
+	<script type="text/javascript" src="js/Console.js"></script>
+	<script type="text/javascript" src="js/HotCode.js"></script>
+	<script type="text/javascript">
+		HotCode.initialize();
+	</script>
+	
+</head>
+<body>
+	<div class="noscript">
+		<h2 style="color: #ff0000">Seems your browser doesn't support
+			Javascript! Websockets rely on Javascript being enabled. Please
+			enable Javascript and reload this page!</h2>
+	</div>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#"><img src="img/logo48.png" alt="logo" style="display: inline; width: 24px;" /> Socket Message v1.1</a>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li ><a href="#">Chat</a></li>
+					<li class="active"><a href="#" >HotCode <span class="sr-only">(current)</span></a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="https://github.com/keehyun2/socketmessage" target="_NEW"  >GitHub</a></li>
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container-fluid -->
+	</nav>
+	<div class="container-fluid">
+		<div class="row">
+			<div id="user-container" class="col-md-3">
+				<div style="display:inline-block;position:relative;">
+					<input type="text" class="form-control" placeholder="type name" id="name" />
+				</div>
+				<ul id="user-list">
+				</ul>
+			</div>
+			<div id="code-container" class="col-md-9">
+				<div class="form-inline">
+					<div class="form-group">
+						<!-- <label for="option" >Lang</label> -->
+						<select id="mode" class="form-control mr5" >
+							<option value="text/apl" >APL</option>
+							<option value="application/pgp" >PGP</option>
+							<option value="text/x-ttcn-asn" >ASN.1</option>
+							<option value="text/x-asterisk" >Asterisk</option>
+							<option value="text/x-brainfuck" >Brainfuck</option>
+							<option value="text/x-csrc" >C</option>
+							<option value="text/x-c++src" >C++</option>
+							<option value="text/x-cobol" >Cobol</option>
+							<option value="text/x-csharp" >C#</option>
+							<option value="text/x-clojure" >Clojure</option>
+							<option value="text/x-clojurescript" >ClojureScript</option>
+							<option value="text/x-gss" >Closure Stylesheets (GSS)</option>
+							<option value="text/x-cmake" >CMake</option>
+							<option value="text/x-coffeescript" >CoffeeScript</option>
+							<option value="text/x-common-lisp" >Common Lisp</option>
+							<option value="application/x-cypher-query" >Cypher</option>
+							<option value="text/x-cython" >Cython</option>
+							<option value="text/x-crystal" >Crystal</option>
+							<option value="text/css" >CSS</option>
+							<option value="text/x-cassandra" >CQL</option>
+							<option value="text/x-d" >D</option>
+							<option value="application/dart" >Dart</option>
+							<option value="text/x-diff" >diff</option>
+							<option value="text/x-django" >Django</option>
+							<option value="text/x-dockerfile" >Dockerfile</option>
+							<option value="application/xml-dtd" >DTD</option>
+							<option value="text/x-dylan" >Dylan</option>
+							<option value="text/x-ebnf" >EBNF</option>
+							<option value="text/x-ecl" >ECL</option>
+							<option value="application/edn" >edn</option>
+							<option value="text/x-eiffel" >Eiffel</option>
+							<option value="text/x-elm" >Elm</option>
+							<option value="application/x-ejs" >Embedded Javascript</option>
+							<option value="application/x-erb" >Embedded Ruby</option>
+							<option value="text/x-erlang" >Erlang</option>
+							<option value="text/x-factor" >Factor</option>
+							<option value="text/x-fcl" >FCL</option>
+							<option value="text/x-forth" >Forth</option>
+							<option value="text/x-fortran" >Fortran</option>
+							<option value="text/x-fsharp" >F#</option>
+							<option value="text/x-gas" >Gas</option>
+							<option value="text/x-feature" >Gherkin</option>
+							<option value="text/x-gfm" >GitHub Flavored Markdown</option>
+							<option value="text/x-go" >Go</option>
+							<option value="text/x-groovy" >Groovy</option>
+							<option value="text/x-haml" >HAML</option>
+							<option value="text/x-haskell" >Haskell</option>
+							<option value="text/x-literate-haskell" >Haskell (Literate)</option>
+							<option value="text/x-haxe" >Haxe</option>
+							<option value="text/x-hxml" >HXML</option>
+							<option value="application/x-aspx" >ASP.NET</option>
+							<option value="text/html" >HTML</option>
+							<option value="message/http" >HTTP</option>
+							<option value="text/x-idl" >IDL</option>
+							<option value="text/x-pug" >Pug</option>
+							<option value="text/x-java" selected="selected">Java</option>
+							<option value="application/x-jsp" >Java Server Pages</option>
+							<option value="text/javascript" >JavaScript</option>
+							<option value="application/json" >JSON</option>
+							<option value="application/ld+json" >JSON-LD</option>
+							<option value="text/jsx" >JSX</option>
+							<option value="null" >Jinja2</option>
+							<option value="text/x-julia" >Julia</option>
+							<option value="text/x-kotlin" >Kotlin</option>
+							<option value="text/x-less" >LESS</option>
+							<option value="text/x-livescript" >LiveScript</option>
+							<option value="text/x-lua" >Lua</option>
+							<option value="text/x-markdown" >Markdown</option>
+							<option value="text/mirc" >mIRC</option>
+							<option value="text/x-mariadb" >MariaDB SQL</option>
+							<option value="text/x-mathematica" >Mathematica</option>
+							<option value="text/x-modelica" >Modelica</option>
+							<option value="text/x-mumps" >MUMPS</option>
+							<option value="text/x-mssql" >MS SQL</option>
+							<option value="application/mbox" >mbox</option>
+							<option value="text/x-mysql" >MySQL</option>
+							<option value="text/x-nginx-conf" >Nginx</option>
+							<option value="text/x-nsis" >NSIS</option>
+							<option value="text/n-triples" >NTriples</option>
+							<option value="text/x-objectivec" >Objective C</option>
+							<option value="text/x-ocaml" >OCaml</option>
+							<option value="text/x-octave" >Octave</option>
+							<option value="text/x-oz" >Oz</option>
+							<option value="text/x-pascal" >Pascal</option>
+							<option value="null" >PEG.js</option>
+							<option value="text/x-perl" >Perl</option>
+							<option value="application/x-httpd-php" >PHP</option>
+							<option value="text/x-pig" >Pig</option>
+							<option value="text/plain" >Plain Text</option>
+							<option value="text/x-plsql" >PLSQL</option>
+							<option value="application/x-powershell" >PowerShell</option>
+							<option value="text/x-properties" >Properties files</option>
+							<option value="text/x-protobuf" >ProtoBuf</option>
+							<option value="text/x-python" >Python</option>
+							<option value="text/x-puppet" >Puppet</option>
+							<option value="text/x-q" >Q</option>
+							<option value="text/x-rsrc" >R</option>
+							<option value="text/x-rst" >reStructuredText</option>
+							<option value="text/x-rpm-changes" >RPM Changes</option>
+							<option value="text/x-rpm-spec" >RPM Spec</option>
+							<option value="text/x-ruby" >Ruby</option>
+							<option value="text/x-rustsrc" >Rust</option>
+							<option value="text/x-sas" >SAS</option>
+							<option value="text/x-sass" >Sass</option>
+							<option value="text/x-scala" >Scala</option>
+							<option value="text/x-scheme" >Scheme</option>
+							<option value="text/x-scss" >SCSS</option>
+							<option value="text/x-sh" >Shell</option>
+							<option value="application/sieve" >Sieve</option>
+							<option value="text/x-slim" >Slim</option>
+							<option value="text/x-stsrc" >Smalltalk</option>
+							<option value="text/x-smarty" >Smarty</option>
+							<option value="text/x-solr" >Solr</option>
+							<option value="text/x-soy" >Soy</option>
+							<option value="application/sparql-query" >SPARQL</option>
+							<option value="text/x-spreadsheet" >Spreadsheet</option>
+							<option value="text/x-sql" >SQL</option>
+							<option value="text/x-squirrel" >Squirrel</option>
+							<option value="text/x-styl" >Stylus</option>
+							<option value="text/x-swift" >Swift</option>
+							<option value="text/x-stex" >sTeX</option>
+							<option value="text/x-latex" >LaTeX</option>
+							<option value="text/x-systemverilog" >SystemVerilog</option>
+							<option value="text/x-tcl" >Tcl</option>
+							<option value="text/x-textile" >Textile</option>
+							<option value="text/x-tiddlywiki" >TiddlyWiki </option>
+							<option value="text/tiki" >Tiki wiki</option>
+							<option value="text/x-toml" >TOML</option>
+							<option value="text/x-tornado" >Tornado</option>
+							<option value="text/troff" >troff</option>
+							<option value="text/x-ttcn" >TTCN</option>
+							<option value="text/x-ttcn-cfg" >TTCN_CFG</option>
+							<option value="text/turtle" >Turtle</option>
+							<option value="application/typescript" >TypeScript</option>
+							<option value="text/x-twig" >Twig</option>
+							<option value="text/x-webidl" >Web IDL</option>
+							<option value="text/x-vb" >VB.NET</option>
+							<option value="text/vbscript" >VBScript</option>
+							<option value="text/velocity" >Velocity</option>
+							<option value="text/x-verilog" >Verilog</option>
+							<option value="text/x-vhdl" >VHDL</option>
+							<option value="script/x-vue" >Vue.js Component</option>
+							<option value="application/xml" >XML</option>
+							<option value="application/xquery" >XQuery</option>
+							<option value="text/x-yacas" >Yacas</option>
+							<option value="text/x-yaml" >YAML</option>
+							<option value="text/x-z80" >Z80</option>
+							<option value="text/x-mscgen" >mscgen</option>
+							<option value="text/x-xu" >xu</option>
+							<option value="text/x-msgenny" >msgenny</option>
+						</select>
+					</div>
+					<div class="btn-group pull-right">
+						<button type="button" id="btnSend"  class="btn btn-default" >
+							<span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+						</button>
+						<button type="button" id="btnConfig" class="btn btn-default" >
+							<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+						</button>
+						<button type="button" id="btnRefreshEdit" class="btn btn-default" >
+							<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+						</button>
+					</div>
+				</div>
+				<div id="codeScript">
+					<textarea >
+	@OnClose
+    public void end() {
+        connections.remove(this);
+        String message = String.format("* %s %s", nickName, "has disconnected.");
+        logger.info(clientIp + " End.");
+        broadcast(message);
+    }
+					</textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- nickname setting Modal -->
+	<div class="modal fade" id="modalSetNick" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button> -->
+					<h4 class="modal-title" id="myModalLabel">Enter NickName</h4>
+					<p>If you do not enter nickname, System gives guest ID to you</p>
+				</div>
+				<div class="modal-body">
+					<input type="text" class="form-control" placeholder="Enter Your NickName" id="nick" />
+				</div>
+				<div class="modal-footer">
+					<!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+					<button type="button" class="btn btn-primary" data-dismiss="modal" id="btnSetNick" >get started</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- editor config Modal -->
+	<div class="modal fade" id="modalConfig" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="myModalLabel">Editor Setting</h4>
+					<!-- (여기에서 설정된 값은 html5 localdb 에 저장됩니다.) -->
+				</div>
+				<div class="modal-body">
+					<div class="form-horizontal">
+						<div class="form-group">
+							<label for="theme"  class="col-sm-3 control-label">Theme</label>
+							<div class="col-sm-9">
+								<select id="theme" class="form-control" >
+									<option >default</option>
+									<option>3024-day</option>
+									<option>3024-night</option>
+									<option>abcdef</option>
+									<option>ambiance</option>
+									<option>base16-dark</option>
+									<option>base16-light</option>
+									<option>bespin</option>
+									<option selected="selected" >blackboard</option>
+									<option>cobalt</option>
+									<option>colorforth</option>
+									<option>dracula</option>
+									<option>duotone-dark</option>
+									<option>duotone-light</option>
+									<option>eclipse</option>
+									<option>elegant</option>
+									<option>erlang-dark</option>
+									<option>hopscotch</option>
+									<option>icecoder</option>
+									<option>isotope</option>
+									<option>lesser-dark</option>
+									<option>liquibyte</option>
+									<option>material</option>
+									<option>mbo</option>
+									<option>mdn-like</option>
+									<option>midnight</option>
+									<option>monokai</option>
+									<option>neat</option>
+									<option>neo</option>
+									<option>night</option>
+									<option>panda-syntax</option>
+									<option>paraiso-dark</option>
+									<option>paraiso-light</option>
+									<option>pastel-on-dark</option>
+									<option>railscasts</option>
+									<option>rubyblue</option>
+									<option>seti</option>
+									<option>solarized dark</option>
+									<option>solarized light</option>
+									<option>the-matrix</option>
+									<option>tomorrow-night-bright</option>
+									<option>tomorrow-night-eighties</option>
+									<option>ttcn</option>
+									<option>twilight</option>
+									<option>vibrant-ink</option>
+									<option>xq-dark</option>
+									<option>xq-light</option>
+									<option>yeti</option>
+									<option>zenburn</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="theme" class="col-sm-3 control-label">Code Folding</label>
+							<div class="col-sm-9">
+								<div class="btn-group" data-toggle="buttons">
+									<label class="btn btn-primary"> 
+										<input type="radio" name="codeFold" id="option1" autocomplete="off" value="1"> Fold
+									</label> 
+									<label class="btn btn-primary active"> 
+										<input type="radio" name="codeFold" id="option2" autocomplete="off" value="0" checked="checked"> Unfold
+									</label> 
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
